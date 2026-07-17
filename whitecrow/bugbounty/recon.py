@@ -9,6 +9,7 @@ from rich import box
 from .tools import subfinder_wrapper, amass_wrapper, httpx_wrapper, dnsx_wrapper
 from .tools import gobuster_wrapper, ffuf_wrapper, whatweb_wrapper, wafw00f_wrapper
 from .tools import nuclei_wrapper
+from .report_generator import generate_report
 
 console = Console()
 
@@ -140,6 +141,10 @@ def run_recon(target, output_dir):
         json.dump(results, f, indent=2, default=str)
     with open(f"{output_dir}/summary.json", "w") as f:
         json.dump(summary, f, indent=2)
+
+    # Generate engagement report
+    report_path = generate_report(target, output_dir, results, summary)
+    console.print(f"\n[dim]Engagement report: [cyan]{report_path}[/][/]")
 
     # Print summary table
     console.print()
