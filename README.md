@@ -14,7 +14,7 @@
 </pre>
 
 <h1 align="center">WhiteCrow</h1>
-<p align="center"><strong>Unified OSINT investigation tool</strong> — email, phone, username & photo reconnaissance with one command</p>
+<p align="center"><strong>Smoke out any target</strong> — email, phone, username, or photo</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.10+-blue">
