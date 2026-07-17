@@ -152,17 +152,13 @@ def main():
 
     if args.target:
         console.print(Text(CROW_ART, style="bright_white"))
-        console.print(f"[bold bright_white]WhiteCrow Bug Bounty Recon[/] v{__version__}")
+        console.print(f"[bold bright_white]WhiteCrow Bug Bounty Scanner[/] v{__version__}")
         print()
         from .bugbounty.recon import run_recon
         base_dir = args.output or f"~/bugbounty/{args.target}"
         base_dir = Path(base_dir).expanduser().resolve()
         results, summary = run_recon(args.target, str(base_dir))
-        elapsed = summary.get("elapsed", 0)
-        console.print(f"\n[bold green]✔[/] Recon complete in [cyan]{elapsed:.2f}s[/]")
-        console.print(f"    Subdomains: [yellow]{summary['subdomains']}[/]")
-        console.print(f"    Output: [cyan]{base_dir}/[/]")
-        console.print(f"    Summary: [cyan]{base_dir}/summary.json[/]")
+        console.print(f"\n[bold green]✔[/] Scan complete — report saved to [cyan]{base_dir}/[/]")
         sys.exit(0)
 
     console.print(Text(CROW_ART, style="bright_white"))
