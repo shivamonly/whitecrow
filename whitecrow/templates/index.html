@@ -6,55 +6,79 @@
 <title>WhiteCrow — OSINT Investigation Tool</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Segoe UI', sans-serif; background: #0f0f1a; color: #e0e0e0; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-.container { max-width: 560px; width: 100%; padding: 40px 20px; }
-.header { text-align: center; margin-bottom: 32px; }
-.header h1 { font-size: 32px; background: linear-gradient(135deg, #00d4ff, #7c4dff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.5px; }
-.header .sub { color: #666; font-size: 13px; margin-top: 6px; }
-.card { background: #1a1a2e; border-radius: 12px; padding: 32px; border: 1px solid #2a2a4a; }
+body { font-family: 'Segoe UI', sans-serif; background: #0a0a14; color: #e0e0e0; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+.container { max-width: 520px; width: 100%; padding: 40px 20px; }
+
+.crow-ascii { text-align: center; margin-bottom: 8px; position: relative; }
+.crow-ascii pre { display: inline-block; color: #00d4ff; font-size: 13px; line-height: 1.15; text-shadow: 0 0 8px #00d4ff66; letter-spacing: 1px; font-weight: bold; }
+.crow-ascii .smoke { position: absolute; color: #888; font-size: 10px; pointer-events: none; animation: rise 3s infinite; }
+@keyframes rise { 0% { opacity: 0.8; transform: translate(0, 0); } 100% { opacity: 0; transform: translate(6px, -30px); } }
+.crow-ascii .smoke:nth-child(2) { right: 55px; top: 40px; animation-delay: 0s; }
+.crow-ascii .smoke:nth-child(3) { right: 50px; top: 30px; animation-delay: 1s; }
+.crow-ascii .smoke:nth-child(4) { right: 45px; top: 20px; animation-delay: 2s; }
+
+.header { text-align: center; margin-bottom: 28px; }
+.header h1 { font-size: 26px; font-weight: 300; letter-spacing: 6px; text-transform: uppercase; background: linear-gradient(135deg, #00d4ff, #b388ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.header .sub { color: #555; font-size: 12px; letter-spacing: 2px; margin-top: 6px; }
+
+.card { background: #12122a; border-radius: 16px; padding: 28px; border: 1px solid #252555; box-shadow: 0 0 40px #00000055; }
 .input-wrap { position: relative; }
-.input-wrap input { width: 100%; padding: 14px 16px; background: #0f0f1a; border: 1px solid #2a2a4a; border-radius: 8px; color: #e0e0e0; font-size: 15px; outline: none; transition: border 0.2s; }
-.input-wrap input:focus { border-color: #00d4ff; }
-.input-wrap input::placeholder { color: #555; }
-.hint { font-size: 11px; color: #555; margin-top: 6px; text-align: center; }
-.btn { width: 100%; padding: 14px; margin-top: 16px; background: linear-gradient(135deg, #00d4ff, #7c4dff); border: none; border-radius: 8px; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
-.btn:hover { opacity: 0.9; }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.photo-label { display: block; text-align: center; margin-top: 12px; font-size: 12px; color: #555; cursor: pointer; }
+.input-wrap input { width: 100%; padding: 14px 16px; background: #0a0a18; border: 1px solid #252555; border-radius: 10px; color: #e0e0e0; font-size: 14px; outline: none; transition: all 0.3s; }
+.input-wrap input:focus { border-color: #00d4ff; box-shadow: 0 0 20px #00d4ff22; }
+.input-wrap input::placeholder { color: #444; }
+.hint { font-size: 11px; color: #444; margin-top: 6px; text-align: center; letter-spacing: 1px; }
+.btn { width: 100%; padding: 14px; margin-top: 16px; border: none; border-radius: 10px; color: #fff; font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.3s; background: linear-gradient(135deg, #00d4ff, #7c4dff); position: relative; overflow: hidden; }
+.btn:hover { transform: translateY(-1px); box-shadow: 0 0 30px #7c4dff44; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.btn::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, #ffffff22 0%, transparent 60%); opacity: 0; transition: opacity 0.3s; }
+.btn:hover::after { opacity: 1; }
+.photo-label { display: block; text-align: center; margin-top: 10px; font-size: 11px; color: #555; letter-spacing: 1px; cursor: pointer; transition: color 0.2s; }
 .photo-label:hover { color: #00d4ff; }
 .photo-label input { display: none; }
 .photo-name { font-size: 11px; color: #888; text-align: center; margin-top: 4px; }
-.spinner { display: none; text-align: center; padding: 24px; }
+.spinner { display: none; text-align: center; padding: 20px; }
 .spinner.active { display: block; }
-.spinner .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #00d4ff; margin: 0 3px; animation: bounce 1.4s infinite; }
-.spinner .dot:nth-child(2) { animation-delay: 0.2s; }
-.spinner .dot:nth-child(3) { animation-delay: 0.4s; }
-@keyframes bounce { 0%,80%,100% { transform: translateY(0); } 40% { transform: translateY(-10px); } }
+.spinner .ring { display: inline-block; width: 36px; height: 36px; border: 3px solid #252555; border-top-color: #00d4ff; border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 #result { margin-top: 20px; display: none; }
-#result pre { background: #0f0f1a; padding: 14px; border-radius: 8px; overflow: auto; max-height: 400px; font-size: 12px; border: 1px solid #2a2a4a; }
+#result pre { background: #0a0a18; padding: 14px; border-radius: 10px; overflow: auto; max-height: 360px; font-size: 11px; border: 1px solid #252555; font-family: 'Cascadia Code', 'Fira Code', monospace; }
 .links { display: flex; gap: 8px; margin-bottom: 10px; }
-.links a { padding: 6px 14px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 500; }
-.report-link { background: #00c85333; color: #00c853; }
-.json-link { background: #2979ff33; color: #2979ff; }
-.error { color: #ff1744; padding: 10px; background: #ff174422; border-radius: 6px; margin-top: 12px; font-size: 13px; display: none; }
-.tag { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
-.tag-email { background: #2979ff33; color: #2979ff; }
-.tag-phone { background: #00c85333; color: #00c853; }
-.tag-user { background: #ffd60033; color: #ffd600; }
+.links a { padding: 6px 16px; border-radius: 8px; text-decoration: none; font-size: 11px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; transition: all 0.2s; }
+.report-link { background: #00c85322; color: #00c853; border: 1px solid #00c85333; }
+.report-link:hover { background: #00c85333; }
+.json-link { background: #2979ff22; color: #2979ff; border: 1px solid #2979ff33; }
+.json-link:hover { background: #2979ff33; }
+.error { color: #ff1744; padding: 10px; background: #ff174411; border-radius: 8px; margin-top: 12px; font-size: 13px; display: none; border: 1px solid #ff174422; }
 </style>
 </head>
 <body>
 <div class="container">
+  <div class="crow-ascii">
+    <pre>
+╔══════════╗
+║  WHITE   ║
+║  CROW    ║
+║  ┌────┐  ║
+║  │ CIG│  ║
+║  └────┘  ║
+╚══╤══╤═══╝
+ ╱│  │  ╲
+ ╱ │  │   ╲</pre>
+    <div class="smoke" style="right:55px;top:42px">▓</div>
+    <div class="smoke" style="right:50px;top:32px">▒</div>
+    <div class="smoke" style="right:45px;top:22px">░</div>
+  </div>
   <div class="header">
     <h1>WhiteCrow</h1>
-    <div class="sub">Submit anything — email, phone, or username — and get a full dossier</div>
+    <div class="sub">Submit anything — email, phone, or username</div>
   </div>
 
   <div class="card">
     <form id="invest-form" autocomplete="off">
       <div class="input-wrap">
-        <input type="text" id="query" placeholder="e.g. target@example.com, +1234567890, johndoe" autofocus>
+        <input type="text" id="query" placeholder="target@example.com / +1234567890 / johndoe" autofocus>
       </div>
+      <div class="hint">auto-detects input type</div>
 
       <label class="photo-label">
         <span id="photo-text">+ attach photo (optional)</span>
@@ -66,8 +90,8 @@ body { font-family: 'Segoe UI', sans-serif; background: #0f0f1a; color: #e0e0e0;
     </form>
 
     <div class="spinner" id="spinner">
-      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-      <p style="color:#888;font-size:12px;margin-top:10px">Running OSINT tools...</p>
+      <div class="ring"></div>
+      <p style="color:#555;font-size:11px;margin-top:10px;letter-spacing:1px">scanning...</p>
     </div>
 
     <div id="result">

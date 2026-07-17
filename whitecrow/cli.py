@@ -6,8 +6,19 @@ from pathlib import Path
 from .orchestrator import run_investigation_sync
 from . import __version__
 
+ANIMATE = True
+
 
 def main():
+    try:
+        from .banner import animate_banner, show_banner
+        if ANIMATE:
+            animate_banner(duration=1.5)
+        else:
+            show_banner()
+    except ImportError:
+        pass
+
     parser = argparse.ArgumentParser(
         description=f"WhiteCrow OSINT Aggregator v{__version__}",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -34,11 +45,7 @@ Examples:
         parser.print_help()
         sys.exit(1)
 
-    print("[*] Starting WhiteCrow investigation...")
-    print(f"    Email: {args.email or 'N/A'}")
-    print(f"    Phone: {args.phone or 'N/A'}")
-    print(f"    Username: {args.username or 'N/A'}")
-    print(f"    Photo: {args.photo or 'N/A'}")
+    print(f"  [*] Target: {args.email or args.phone or args.username or args.photo}")
     print()
 
     try:
