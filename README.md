@@ -1,16 +1,32 @@
-# WhiteCrow
+<pre align="center">
+╔══════════╗
+║  WHITE   ║
+║  CROW    ║
+║  ┌────┐  ║
+║  │ 🚬│  ║
+║  └────┘  ║
+╚══╤══╤═══╝
+ ╱│  │  ╲
+╱ │  │   ╲
+</pre>
 
-**Unified OSINT investigation tool** — input an email, phone number, username, or photo and get a consolidated dossier.
+<h1 align="center">WhiteCrow</h1>
+<p align="center"><strong>Unified OSINT investigation tool</strong> — email, phone, username & photo reconnaissance with one command</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3.10+-blue">
+  <img src="https://img.shields.io/badge/license-MIT-green">
+  <img src="https://img.shields.io/badge/platform-linux%20%7C%20macos%20%7C%20windows-lightgrey">
+</p>
+
+---
 
 ```bash
 # Install
 pip install whitecrow
 
-# Or with all optional tools
+# With all optional tools (sherlock, maigret, holehe, ghunt)
 pip install "whitecrow[all]"
-
-# With web UI
-pip install "whitecrow[web]"
 ```
 
 ## Quick Start
@@ -28,7 +44,8 @@ whitecrow --email target@example.com --username johndoe
 # Save output
 whitecrow --username johndoe -o report.json --pretty
 
-# Web UI (after installing web extras)
+# Web UI
+pip install "whitecrow[web]"
 uvicorn whitecrow.api:app --host 0.0.0.0 --port 8000
 ```
 
@@ -36,32 +53,27 @@ uvicorn whitecrow.api:app --host 0.0.0.0 --port 8000
 
 | Input | Tools Used |
 |-------|-----------|
-| **Email** | holehe (120+ site checks), emailrep.io (reputation), theHarvester (domain recon), GHunt (Google profile ID, YouTube, Calendar, Maps), HIBP (breach lookup) |
+| **Email** | holehe (121 site checks), emailrep.io (reputation), theHarvester (domain recon), GHunt (Google profile), HIBP (breach + paste lookup) |
 | **Phone** | libphonenumber (country, carrier, location, type), WhatsApp/Telegram/Signal registration check |
-| **Username** | Sherlock (400+ social networks), Maigret (2500+ sites) |
-| **Photo** | ExifTool (EXIF metadata), Google Reverse Image Search, Yandex Reverse Image Search |
+| **Username** | Sherlock (400+ platforms), Maigret (2500+ sites) |
+| **Photo** | ExifTool (EXIF/GPS metadata), Google + Yandex reverse image search |
 
 ## Install from Git
 
 ```bash
-git clone https://github.com/yourusername/whitecrow.git
+git clone https://github.com/shivamonly/whitecrow.git
 cd whitecrow
 pip install -e ".[all]"
 whitecrow --username johndoe
 ```
 
-## Web API
+## API
 
-```bash
-pip install "whitecrow[web]"
-uvicorn whitecrow.api:app --host 0.0.0.0 --port 8000
-# Open http://localhost:8000
-```
-
-API endpoints:
-- `POST /api/v1/investigate` — form data: `email`, `phone`, `username`, `photo` (file)
-- `GET /api/v1/investigate/{task_id}` — get JSON result
-- `GET /report/{task_id}` — view HTML report
+| Endpoint | Description |
+|----------|-------------|
+| `POST /api/v1/investigate` | Submit email, phone, username, or photo |
+| `GET /api/v1/investigate/{task_id}` | Get JSON result |
+| `GET /report/{task_id}` | View HTML report |
 
 ## Cross-Platform
 
@@ -69,4 +81,4 @@ Works on **Linux**, **macOS**, and **Windows**. System tools (exiftool, theHarve
 
 ## Legal
 
-This tool is intended **only** for authorized security assessments, CTFs, and investigations with explicit consent. Unauthorized use may violate applicable laws.
+For authorized security assessments, CTFs, and investigations with explicit consent only.
