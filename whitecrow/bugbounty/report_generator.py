@@ -129,6 +129,8 @@ Target `{target}` was scanned using WhiteCrow's automated bug bounty pipeline.
 
 **Vulnerabilities:** {summary.get('vulnerabilities_found', 0)} potential issues found
 
+**Attack Surface Issues:** {summary.get('attack_issues', 0)} (info disclosure, auth endpoints, CORS, SSRF)
+
 *See `01-recon/` for detailed per-tool output.*
 
 ---
@@ -170,6 +172,12 @@ All tool outputs are saved in `01-recon/` and `03-attack/`.
     with open(f"{output_dir}/report/report.md", "w") as f:
         f.write(report_md)
 
+    # Save attack findings to 03-attack
+    atk = results.get("vulnerability_analysis", {})
+    if atk.get("results"):
+        with open(f"{output_dir}/03-attack/findings.json", "w") as f:
+            json.dump(atk["results"], f, indent=2)
+
     # Generate executive summary
     exec_summary = f"""# WhiteCrow — Executive Summary
 
@@ -185,6 +193,7 @@ A reconnaissance and vulnerability assessment was performed on {target}.
 | Scan Duration | {summary.get('elapsed_seconds', 'N/A')}s |
 | Subdomains Discovered | {summary.get('subdomains_found', 0)} |
 | Live Services Found | {summary.get('live_hosts', 0)} |
+| Attack Surface Issues | {summary.get('attack_issues', 0)} |
 | Potential Vulnerabilities | {summary.get('vulnerabilities_found', 0)} |
 
 ### Tools Used
@@ -209,6 +218,7 @@ The developer is NOT responsible for any misuse.
         "timestamp": now,
         "subdomains": summary.get("subdomains_found", 0),
         "live_hosts": summary.get("live_hosts", 0),
+        "attack_issues": summary.get("attack_issues", 0),
         "vulnerabilities": summary.get("vulnerabilities_found", 0),
         "tools_used": summary.get("tools_used", []),
         "tools_skipped": summary.get("tools_skipped", []),

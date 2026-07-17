@@ -8,7 +8,7 @@ from rich import box
 
 from .tools import subfinder_wrapper, amass_wrapper, httpx_wrapper, dnsx_wrapper
 from .tools import gobuster_wrapper, ffuf_wrapper, whatweb_wrapper, wafw00f_wrapper
-from .tools import nuclei_wrapper
+from .tools import nuclei_wrapper, attack_wrapper
 from .report_generator import generate_report
 
 console = Console()
@@ -109,8 +109,21 @@ def run_recon(target, output_dir):
     results["ffuf"] = ff
     console.print(f" [{'green' if ff['status']=='success' else 'yellow' if ff['status']=='skipped' else 'red'}]{ff['status']}[/] ({ff.get('count', 0)})")
 
-    # --- Phase 5: Vulnerability Scanning ---
-    console.print("\n[bold cyan]Phase 5 — Vulnerability Scanning[/]")
+    # --- Phase 5: Vulnerability Analysis (WAHH Ch.5-13) ---
+    console.print("\n[bold cyan]Phase 5 — Vulnerability Analysis[/]")
+    console.print("  └ Info Disclosure / Auth / CORS / SSRF...", end="")
+    atk = attack_wrapper.run(target, output_dir)
+    results["vulnerability_analysis"] = atk
+    atk_count = atk.get("total_findings", 0)
+    console.print(f" [{'green' if atk_count else 'yellow'}]{'found' if atk_count else 'none'}[/] ({atk_count} issues)")
+
+    # Print sub-findings
+    for category, cat_result in atk.get("results", {}).items():
+        if cat_result.get("count", 0):
+            console.print(f"    ├ {category}: [yellow]{cat_result['count']}[/] findings")
+
+    # --- Phase 6: Automated Scanning ---
+    console.print("\n[bold cyan]Phase 6 — Automated Scanning[/]")
     targets_to_scan = live_urls if live_urls else [main_url]
     vuln_results = []
     for scan_target in targets_to_scan[:5]:
@@ -124,6 +137,7 @@ def run_recon(target, output_dir):
     # --- Summary ---
     elapsed = round(time.time() - start, 2)
     total_vulns = sum(len(r.get("results", [])) for r in vuln_results)
+    total_attack = atk.get("total_findings", 0)
 
     summary = {
         "target": target,
@@ -131,6 +145,7 @@ def run_recon(target, output_dir):
         "subdomains_found": len(all_subs),
         "live_hosts": len(live_urls),
         "vulnerabilities_found": total_vulns,
+        "attack_issues": total_attack,
         "tools_used": [k for k, v in results.items() if v.get("status") == "success"],
         "tools_skipped": [k for k, v in results.items() if v.get("status") == "skipped"],
         "output_dir": str(output_dir),
@@ -155,6 +170,7 @@ def run_recon(target, output_dir):
     tbl.add_row("Duration", f"{elapsed:.2f}s")
     tbl.add_row("Subdomains", str(len(all_subs)))
     tbl.add_row("Live Hosts", str(len(live_urls)))
+    tbl.add_row("Attack Issues", str(total_attack))
     tbl.add_row("Vulnerabilities", str(total_vulns))
     tbl.add_row("Tools Used", str(len(summary["tools_used"])))
     tbl.add_row("Report", str(output_dir))
