@@ -91,19 +91,13 @@ def add_smoke(lines, offset):
 
 
 def animate_banner(duration=2.0):
-    cols, _ = shutil.get_terminal_size()
-
     with Live(console=console, refresh_per_second=10, transient=True, screen=False) as live:
         for step in range(20):
             lines = add_smoke(CROW, step % 4)
             art = "\n".join(lines)
-            panel = Panel(
-                Align.center(Text(art, style="bright_white")),
-                width=min(90, cols - 4),
-                border_style="bright_white",
-                title=f"[bright_white]WhiteCrow v{__version__}[/]",
-                subtitle="[dim]OSINT Investigation Tool[/]",
-                padding=(0, 1),
+            t = Text(
+                f"[bright_white]WhiteCrow v{__version__}[/]  [dim]OSINT Investigation Tool[/]\n\n{art}",
+                style="bright_white",
             )
-            live.update(panel)
+            live.update(t)
             time.sleep(0.1)

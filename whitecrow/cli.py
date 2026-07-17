@@ -151,7 +151,7 @@ def main():
         sys.exit(0 if args.help else 1)
 
     if args.target:
-        console.print(Text(CROW_ART, style="bright_white"))
+        console.print(Text(CROW_ART, style="bright_white"), soft_wrap=True)
         console.print(f"[bold bright_white]WhiteCrow Bug Bounty Scanner[/] v{__version__}")
         print()
         from .bugbounty.recon import run_recon
@@ -161,7 +161,7 @@ def main():
         console.print(f"\n[bold green]✔[/] Scan complete — report saved to [cyan]{base_dir}/[/]")
         sys.exit(0)
 
-    console.print(Text(CROW_ART, style="bright_white"))
+    console.print(Text(CROW_ART, style="bright_white"), soft_wrap=True)
     console.print(f"[dim]»[/] Target: [bold cyan]{args.email or args.phone or args.username or args.photo}[/]")
     print()
 
