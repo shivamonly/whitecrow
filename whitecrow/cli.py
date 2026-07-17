@@ -88,6 +88,7 @@ def show_help():
         title=f"[bold white]WhiteCrow v{__version__}[/]",
         subtitle="[dim]OSINT Investigation Tool[/]",
         padding=(0, 2),
+        width=80,
     )
     console.print(banner)
 
@@ -122,13 +123,6 @@ def show_help():
 
 
 def main():
-    try:
-        from .banner import animate_banner
-        if ANIMATE:
-            animate_banner(duration=1.5)
-    except ImportError:
-        pass
-
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--email")
     parser.add_argument("--phone")
@@ -149,6 +143,13 @@ def main():
     if args.help or not any([args.email, args.phone, args.username, args.photo, args.target]):
         show_help()
         sys.exit(0 if args.help else 1)
+
+    try:
+        from .banner import animate_banner
+        if ANIMATE:
+            animate_banner(duration=1.5)
+    except ImportError:
+        pass
 
     if args.target:
         console.print(Text(CROW_ART, style="bright_white"), soft_wrap=True)
