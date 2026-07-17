@@ -98,21 +98,25 @@ def show_help():
     tbl.add_row("--phone PHONE", "Target phone number (E.164 format)")
     tbl.add_row("--username USERNAME", "Target username")
     tbl.add_row("--photo PHOTO", "Path to photo file")
-    tbl.add_row("-o, --output OUTPUT", "Output JSON file path")
+    tbl.add_row("--target DOMAIN", "Bug bounty recon target domain/IP")
+    tbl.add_row("-o, --output OUTPUT", "Output directory / JSON file path")
     tbl.add_row("--pretty", "Pretty-print JSON output")
     tbl.add_row("-h, --help", "Show this help message and exit")
     tbl.add_row("--version", "Show version and exit")
     console.print(tbl)
 
-    console.print("\n[bold]Examples:[/]")
+    console.print("\n[bold]OSINT Examples:[/]")
     for ex in [
         "whitecrow --email target@example.com",
         "whitecrow --phone +1234567890",
         "whitecrow --username johndoe",
         "whitecrow --photo /path/to/photo.jpg",
-        "whitecrow --email target@example.com --username johndoe",
     ]:
         console.print(f"  [dim]$[/] [cyan]{ex}[/]")
+
+    console.print("\n[bold]Bug Bounty Example:[/]")
+    console.print(f"  [dim]$[/] [cyan]whitecrow --target example.com[/]")
+    console.print(f"  [dim]$[/] [cyan]whitecrow --target example.com -o ~/reports/example[/]")
 
     console.print()
 
@@ -130,6 +134,7 @@ def main():
     parser.add_argument("--phone")
     parser.add_argument("--username")
     parser.add_argument("--photo")
+    parser.add_argument("--target", help="Target domain/IP for bug bounty recon")
     parser.add_argument("-o", "--output")
     parser.add_argument("--pretty", action="store_true")
     parser.add_argument("-h", "--help", action="store_true")
@@ -141,9 +146,24 @@ def main():
         console.print(f"[bright_magenta]WhiteCrow[/] [cyan]v{__version__}[/]")
         sys.exit(0)
 
-    if args.help or not any([args.email, args.phone, args.username, args.photo]):
+    if args.help or not any([args.email, args.phone, args.username, args.photo, args.target]):
         show_help()
         sys.exit(0 if args.help else 1)
+
+    if args.target:
+        console.print(Text(CROW_ART, style="bright_white"))
+        console.print(f"[bold bright_white]WhiteCrow Bug Bounty Recon[/] v{__version__}")
+        print()
+        from .bugbounty.recon import run_recon
+        base_dir = args.output or f"~/bugbounty/{args.target}"
+        base_dir = Path(base_dir).expanduser().resolve()
+        results, summary = run_recon(args.target, str(base_dir))
+        elapsed = summary.get("elapsed", 0)
+        console.print(f"\n[bold green]✔[/] Recon complete in [cyan]{elapsed:.2f}s[/]")
+        console.print(f"    Subdomains: [yellow]{summary['subdomains']}[/]")
+        console.print(f"    Output: [cyan]{base_dir}/[/]")
+        console.print(f"    Summary: [cyan]{base_dir}/summary.json[/]")
+        sys.exit(0)
 
     console.print(Text(CROW_ART, style="bright_white"))
     console.print(f"[dim]»[/] Target: [bold cyan]{args.email or args.phone or args.username or args.photo}[/]")
