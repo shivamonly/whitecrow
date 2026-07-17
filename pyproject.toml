@@ -53,8 +53,8 @@ all = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/whitecrow"
-Repository = "https://github.com/yourusername/whitecrow"
+Homepage = "https://github.com/shivamonly/whitecrow"
+Repository = "https://github.com/shivamonly/whitecrow"
 
 [project.scripts]
 whitecrow = "whitecrow.cli:main"
