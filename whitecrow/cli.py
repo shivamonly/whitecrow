@@ -81,7 +81,6 @@ CROW_ART = """\
 
 
 def show_help():
-    console.print(Text(CROW_ART, style="bright_white"))
     banner = Panel(
         Text(" Smoke out any target — email, phone, username, or photo\n", style="white"),
         border_style="white",

@@ -107,19 +107,3 @@ def animate_banner(duration=2.0):
             )
             live.update(panel)
             time.sleep(0.1)
-
-    show_banner()
-
-
-def show_banner():
-    cols, _ = shutil.get_terminal_size()
-    art = "\n".join(CROW)
-    panel = Panel(
-        Align.center(Text(art, style="bright_white")),
-        width=min(90, cols - 4),
-        border_style="bright_white",
-        title=f"[bright_white]WhiteCrow v{__version__}[/]",
-        subtitle="[dim]OSINT Investigation Tool[/]",
-        padding=(0, 1),
-    )
-    console.print(panel)
