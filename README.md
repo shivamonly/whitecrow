@@ -67,19 +67,46 @@
 <p align="center"><strong>Smoke out any target</strong> — email, phone, username, or photo</p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/python-3.10+-blue">
-  <img src="https://img.shields.io/badge/license-MIT-green">
-  <img src="https://img.shields.io/badge/platform-linux%20%7C%20macos%20%7C%20windows-lightgrey">
+  <img src="https://img.shields.io/badge/python-3.10+-blue?style=flat-square">
+  <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square">
+  <img src="https://img.shields.io/badge/Linux-FCC624?style=flat-square&logo=linux&logoColor=black">
+  <img src="https://img.shields.io/badge/macOS-000?style=flat-square&logo=apple&logoColor=white">
+  <img src="https://img.shields.io/badge/Windows-0078D6?style=flat-square&logo=windows&logoColor=white">
 </p>
 
 ---
 
-```bash
-# Install
-pip install whitecrow
+## Install
 
-# With all optional tools (sherlock, maigret, holehe, ghunt)
-pip install "whitecrow[all]"
+### Linux (Debian/Ubuntu/Kali)
+```bash
+git clone https://github.com/shivamonly/whitecrow.git
+cd whitecrow
+pip install --break-system-packages -e ".[all]"
+whitecrow --help
+```
+
+### macOS
+```bash
+git clone https://github.com/shivamonly/whitecrow.git
+cd whitecrow
+python3 -m venv venv && source venv/bin/activate
+pip install -e ".[all]"
+whitecrow --help
+```
+
+### Windows (PowerShell)
+```powershell
+git clone https://github.com/shivamonly/whitecrow.git
+cd whitecrow
+python -m venv venv; .\venv\Scripts\activate
+pip install -e ".[all]"
+whitecrow --help
+```
+
+### Pip (any platform)
+```bash
+pip install whitecrow[all]
 ```
 
 ## Quick Start
