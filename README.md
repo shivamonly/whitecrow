@@ -64,7 +64,7 @@
 </pre>
 
 <h1 align="center">WhiteCrow</h1>
-<p align="center"><strong>Smoke out any target</strong> — email, phone, username, or photo</p>
+<p align="center"><strong>OSINT Investigation & Bug Bounty Scanner</strong> — email, phone, username, photo & website reconnaissance</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.10+-blue?style=flat-square">
@@ -78,87 +78,67 @@
 
 ## Install
 
-### Linux (Debian/Ubuntu/Kali)
 ```bash
 git clone https://github.com/shivamonly/whitecrow.git
 cd whitecrow
-pip install --break-system-packages -e ".[all]"
-whitecrow --help
-```
-
-### macOS
-```bash
-git clone https://github.com/shivamonly/whitecrow.git
-cd whitecrow
-python3 -m venv venv && source venv/bin/activate
 pip install -e ".[all]"
 whitecrow --help
 ```
 
-### Windows (PowerShell)
-```powershell
-git clone https://github.com/shivamonly/whitecrow.git
-cd whitecrow
-python -m venv venv; .\venv\Scripts\activate
-pip install -e ".[all]"
-whitecrow --help
-```
-
-### Pip (any platform)
-```bash
-pip install whitecrow[all]
-```
-
-## Quick Start
+## Quick Start — OSINT
 
 ```bash
-# CLI — single input
 whitecrow --email target@example.com
 whitecrow --phone +1234567890
 whitecrow --username johndoe
 whitecrow --photo /path/to/photo.jpg
+whitecrow --email target@example.com --username johndoe -o report.json --pretty
+```
 
-# Combine inputs
-whitecrow --email target@example.com --username johndoe
+## Quick Start — Bug Bounty Recon
 
-# Save output
-whitecrow --username johndoe -o report.json --pretty
+```bash
+whitecrow --target example.com
+whitecrow --target example.com -o ~/reports/example
+```
 
-# Web UI
+Scans a domain/IP through **5 phases**:
+
+| Phase | Tools | What It Finds |
+|-------|-------|---------------|
+| **1. Subdomains** | subfinder, amass | All subdomains (passive) |
+| **2. DNS / HTTP** | dnsx, httpx | Resolved IPs, live hosts, tech stack |
+| **3. Technology** | whatweb, wafw00f | CMS, frameworks, WAF detection |
+| **4. Content** | gobuster, ffuf | Hidden directories, backup files, endpoints |
+| **5. Vulnerabilities** | nuclei | Critical/High/Medium CVEs & misconfigs |
+
+All tools gracefully **skip** if not installed — no crashes.
+
+## OSINT Modules
+
+| Input | Tools |
+|-------|-------|
+| **Email** | holehe, emailrep.io, theHarvester, GHunt, HIBP |
+| **Phone** | libphonenumber, WhatsApp/Telegram/Signal check |
+| **Username** | Sherlock (400+), Maigret (2500+) |
+| **Photo** | ExifTool, Google + Yandex reverse image |
+
+## Web UI
+
+```bash
 pip install "whitecrow[web]"
 uvicorn whitecrow.api:app --host 0.0.0.0 --port 8000
 ```
 
-## What It Does
+API endpoints: `POST /api/v1/investigate` | `GET /api/v1/investigate/{task_id}` | `GET /report/{task_id}`
 
-| Input | Tools Used |
-|-------|-----------|
-| **Email** | holehe (121 site checks), emailrep.io (reputation), theHarvester (domain recon), GHunt (Google profile), HIBP (breach + paste lookup) |
-| **Phone** | libphonenumber (country, carrier, location, type), WhatsApp/Telegram/Signal registration check |
-| **Username** | Sherlock (400+ platforms), Maigret (2500+ sites) |
-| **Photo** | ExifTool (EXIF/GPS metadata), Google + Yandex reverse image search |
+## Disclaimer
 
-## Install from Git
-
-```bash
-git clone https://github.com/shivamonly/whitecrow.git
-cd whitecrow
-pip install -e ".[all]"
-whitecrow --username johndoe
-```
-
-## API
-
-| Endpoint | Description |
-|----------|-------------|
-| `POST /api/v1/investigate` | Submit email, phone, username, or photo |
-| `GET /api/v1/investigate/{task_id}` | Get JSON result |
-| `GET /report/{task_id}` | View HTML report |
+> **This tool is for educational purposes only.**  
+> You must have explicit written permission before testing any system.  
+> The developer is **NOT responsible** for any misuse or damage caused.  
+> Unauthorized testing may be illegal and result in criminal charges.
 
 ## Cross-Platform
 
-Works on **Linux**, **macOS**, and **Windows**. System tools (exiftool, theHarvester) are detected automatically — if absent, their modules are skipped gracefully.
-
-## Legal
-
-For authorized security assessments, CTFs, and investigations with explicit consent only.
+Works on **Linux**, **macOS**, and **Windows**. System tools are auto-detected — missing tools are skipped.
