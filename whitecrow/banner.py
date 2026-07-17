@@ -5,7 +5,7 @@ from rich.console import Console
 from rich.live import Live
 from rich.text import Text
 from rich.panel import Panel
-from rich.align import Center
+from rich.align import Align
 
 console = Console()
 
@@ -97,10 +97,10 @@ def animate_banner(duration=2.0):
             lines = add_smoke(CROW, step % 4)
             art = "\n".join(lines)
             panel = Panel(
-                Center(Text(art, style="bright_cyan")),
+                Align.center(Text(art, style="bright_white")),
                 width=min(90, cols - 4),
-                border_style="bright_magenta",
-                title=f"[bright_magenta]WhiteCrow v1.0.0[/]",
+                border_style="bright_white",
+                title=f"[bright_white]WhiteCrow v1.0.0[/]",
                 subtitle="[dim]OSINT Investigation Tool[/]",
                 padding=(0, 1),
             )
@@ -114,10 +114,10 @@ def show_banner():
     cols, _ = shutil.get_terminal_size()
     art = "\n".join(CROW)
     panel = Panel(
-        Center(Text(art, style="bright_cyan")),
+        Align.center(Text(art, style="bright_white")),
         width=min(90, cols - 4),
-        border_style="bright_cyan",
-        title=f"[bright_magenta]WhiteCrow v1.0.0[/]",
+        border_style="bright_white",
+        title=f"[bright_white]WhiteCrow v1.0.0[/]",
         subtitle="[dim]OSINT Investigation Tool[/]",
         padding=(0, 1),
     )

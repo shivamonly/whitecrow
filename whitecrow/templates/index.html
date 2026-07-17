@@ -10,12 +10,7 @@ body { font-family: 'Segoe UI', sans-serif; background: #0a0a14; color: #e0e0e0;
 .container { max-width: 520px; width: 100%; padding: 40px 20px; }
 
 .crow-ascii { text-align: center; margin-bottom: 8px; position: relative; }
-.crow-ascii pre { display: inline-block; color: #00d4ff; font-size: 13px; line-height: 1.15; text-shadow: 0 0 8px #00d4ff66; letter-spacing: 1px; font-weight: bold; }
-.crow-ascii .smoke { position: absolute; color: #888; font-size: 10px; pointer-events: none; animation: rise 3s infinite; }
-@keyframes rise { 0% { opacity: 0.8; transform: translate(0, 0); } 100% { opacity: 0; transform: translate(6px, -30px); } }
-.crow-ascii .smoke:nth-child(2) { right: 55px; top: 40px; animation-delay: 0s; }
-.crow-ascii .smoke:nth-child(3) { right: 50px; top: 30px; animation-delay: 1s; }
-.crow-ascii .smoke:nth-child(4) { right: 45px; top: 20px; animation-delay: 2s; }
+.crow-ascii pre { display: inline-block; color: #fff; font-size: 13px; line-height: 1.15; text-shadow: 0 0 8px #ffffff44; font-weight: bold; }
 
 .header { text-align: center; margin-bottom: 28px; }
 .header h1 { font-size: 26px; font-weight: 300; letter-spacing: 6px; text-transform: uppercase; background: linear-gradient(135deg, #00d4ff, #b388ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -54,19 +49,18 @@ body { font-family: 'Segoe UI', sans-serif; background: #0a0a14; color: #e0e0e0;
 <body>
 <div class="container">
   <div class="crow-ascii">
-    <pre>
-╔══════════╗
-║  WHITE   ║
-║  CROW    ║
-║  ┌────┐  ║
-║  │ CIG│  ║
-║  └────┘  ║
-╚══╤══╤═══╝
- ╱│  │  ╲
- ╱ │  │   ╲</pre>
-    <div class="smoke" style="right:55px;top:42px">▓</div>
-    <div class="smoke" style="right:50px;top:32px">▒</div>
-    <div class="smoke" style="right:45px;top:22px">░</div>
+    <pre>     ░░░░░░
+   ░░░░░░░░░░
+  ░░▓▓▓▓▓▓▓▓░░
+  ░░▓▓▓▓▓▓▓▓▓▓░░
+  ░░▓▓░░▒▒░░▓▓░░
+  ░░░░░░░░░░░░░░
+  ░░░░░░░░░░░░░░░
+ ░░▓▓░░░░░░░░▓▓░░
+ ░░░░░░░░░░░░░░░░░
+  ░░▓▓▓▓▓▓▓▓▓▓░░
+   ░░░░░░░░░░░░
+    ░░▓▓▓▓▓▓░░</pre>
   </div>
   <div class="header">
     <h1>WhiteCrow</h1>
