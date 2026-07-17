@@ -6,6 +6,7 @@ from rich.live import Live
 from rich.text import Text
 from rich.panel import Panel
 from rich.align import Align
+from . import __version__
 
 console = Console()
 
@@ -100,7 +101,7 @@ def animate_banner(duration=2.0):
                 Align.center(Text(art, style="bright_white")),
                 width=min(90, cols - 4),
                 border_style="bright_white",
-                title=f"[bright_white]WhiteCrow v1.0.0[/]",
+                title=f"[bright_white]WhiteCrow v{__version__}[/]",
                 subtitle="[dim]OSINT Investigation Tool[/]",
                 padding=(0, 1),
             )
@@ -117,7 +118,7 @@ def show_banner():
         Align.center(Text(art, style="bright_white")),
         width=min(90, cols - 4),
         border_style="bright_white",
-        title=f"[bright_white]WhiteCrow v1.0.0[/]",
+        title=f"[bright_white]WhiteCrow v{__version__}[/]",
         subtitle="[dim]OSINT Investigation Tool[/]",
         padding=(0, 1),
     )
