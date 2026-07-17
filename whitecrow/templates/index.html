@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhiteCrow — OSINT Investigation Tool</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', sans-serif; background: #0f0f1a; color: #e0e0e0; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+.container { max-width: 560px; width: 100%; padding: 40px 20px; }
+.header { text-align: center; margin-bottom: 32px; }
+.header h1 { font-size: 32px; background: linear-gradient(135deg, #00d4ff, #7c4dff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.5px; }
+.header .sub { color: #666; font-size: 13px; margin-top: 6px; }
+.card { background: #1a1a2e; border-radius: 12px; padding: 32px; border: 1px solid #2a2a4a; }
+.input-wrap { position: relative; }
+.input-wrap input { width: 100%; padding: 14px 16px; background: #0f0f1a; border: 1px solid #2a2a4a; border-radius: 8px; color: #e0e0e0; font-size: 15px; outline: none; transition: border 0.2s; }
+.input-wrap input:focus { border-color: #00d4ff; }
+.input-wrap input::placeholder { color: #555; }
+.hint { font-size: 11px; color: #555; margin-top: 6px; text-align: center; }
+.btn { width: 100%; padding: 14px; margin-top: 16px; background: linear-gradient(135deg, #00d4ff, #7c4dff); border: none; border-radius: 8px; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+.btn:hover { opacity: 0.9; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.photo-label { display: block; text-align: center; margin-top: 12px; font-size: 12px; color: #555; cursor: pointer; }
+.photo-label:hover { color: #00d4ff; }
+.photo-label input { display: none; }
+.photo-name { font-size: 11px; color: #888; text-align: center; margin-top: 4px; }
+.spinner { display: none; text-align: center; padding: 24px; }
+.spinner.active { display: block; }
+.spinner .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #00d4ff; margin: 0 3px; animation: bounce 1.4s infinite; }
+.spinner .dot:nth-child(2) { animation-delay: 0.2s; }
+.spinner .dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce { 0%,80%,100% { transform: translateY(0); } 40% { transform: translateY(-10px); } }
+#result { margin-top: 20px; display: none; }
+#result pre { background: #0f0f1a; padding: 14px; border-radius: 8px; overflow: auto; max-height: 400px; font-size: 12px; border: 1px solid #2a2a4a; }
+.links { display: flex; gap: 8px; margin-bottom: 10px; }
+.links a { padding: 6px 14px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 500; }
+.report-link { background: #00c85333; color: #00c853; }
+.json-link { background: #2979ff33; color: #2979ff; }
+.error { color: #ff1744; padding: 10px; background: #ff174422; border-radius: 6px; margin-top: 12px; font-size: 13px; display: none; }
+.tag { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
+.tag-email { background: #2979ff33; color: #2979ff; }
+.tag-phone { background: #00c85333; color: #00c853; }
+.tag-user { background: #ffd60033; color: #ffd600; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>WhiteCrow</h1>
+    <div class="sub">Submit anything — email, phone, or username — and get a full dossier</div>
+  </div>
+
+  <div class="card">
+    <form id="invest-form" autocomplete="off">
+      <div class="input-wrap">
+        <input type="text" id="query" placeholder="e.g. target@example.com, +1234567890, johndoe" autofocus>
+      </div>
+
+      <label class="photo-label">
+        <span id="photo-text">+ attach photo (optional)</span>
+        <input type="file" id="photo" accept="image/*">
+      </label>
+      <div class="photo-name" id="photo-name"></div>
+
+      <button type="submit" class="btn" id="submit-btn">Investigate</button>
+    </form>
+
+    <div class="spinner" id="spinner">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <p style="color:#888;font-size:12px;margin-top:10px">Running OSINT tools...</p>
+    </div>
+
+    <div id="result">
+      <div class="links">
+        <a class="report-link" id="report-link" target="_blank">HTML Report</a>
+        <a class="json-link" id="json-link" target="_blank">View JSON</a>
+      </div>
+      <pre id="output"></pre>
+    </div>
+
+    <div class="error" id="error"></div>
+  </div>
+</div>
+
+<script>
+function detectType(val) {
+  val = val.trim();
+  if (/^[\w\.\-]+@[\w\.\-]+\.\w{2,}$/.test(val)) return 'email';
+  if (/^\+?[1-9]\d{6,14}$/.test(val)) return 'phone';
+  if (val) return 'username';
+  return null;
+}
+
+document.getElementById('invest-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const query = document.getElementById('query').value.trim();
+  if (!query) return;
+
+  const btn = document.getElementById('submit-btn');
+  const spinner = document.getElementById('spinner');
+  const result = document.getElementById('result');
+  const output = document.getElementById('output');
+  const error = document.getElementById('error');
+  const reportLink = document.getElementById('report-link');
+  const jsonLink = document.getElementById('json-link');
+
+  result.style.display = 'none';
+  error.style.display = 'none';
+  btn.disabled = true;
+  spinner.classList.add('active');
+
+  const formData = new FormData();
+  const type = detectType(query);
+  const photo = document.getElementById('photo').files[0];
+
+  if (type === 'email') formData.append('email', query);
+  else if (type === 'phone') formData.append('phone', query);
+  else formData.append('username', query);
+  if (photo) formData.append('photo', photo);
+
+  try {
+    const resp = await fetch('/api/v1/investigate', { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (!resp.ok) { error.textContent = data.error || 'Request failed'; error.style.display = 'block'; return; }
+    output.textContent = JSON.stringify(data.result, null, 2);
+    reportLink.href = `/report/${data.task_id}`;
+    jsonLink.href = `/api/v1/investigate/${data.task_id}`;
+    result.style.display = 'block';
+  } catch (err) {
+    error.textContent = 'Network error: ' + err.message;
+    error.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    spinner.classList.remove('active');
+  }
+});
+
+document.getElementById('photo').addEventListener('change', (e) => {
+  const f = e.target.files[0];
+  document.getElementById('photo-name').textContent = f ? f.name : '';
+});
+</script>
+</body>
+</html>

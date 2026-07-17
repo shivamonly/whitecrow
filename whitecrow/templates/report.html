@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhiteCrow Report - {{ result.query }}</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', sans-serif; background: #0f0f1a; color: #e0e0e0; padding: 20px; }
+.container { max-width: 1200px; margin: 0 auto; }
+.header { text-align: center; padding: 30px; background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 12px; margin-bottom: 24px; }
+.header h1 { color: #00d4ff; font-size: 28px; }
+.header .meta { color: #888; font-size: 14px; margin-top: 8px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; }
+.card { background: #1a1a2e; border-radius: 10px; padding: 20px; border: 1px solid #2a2a4a; }
+.card h2 { color: #00d4ff; font-size: 16px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #2a2a4a; }
+.card table { width: 100%; border-collapse: collapse; }
+.card td { padding: 6px 4px; font-size: 13px; border-bottom: 1px solid #1f1f35; }
+.card td:first-child { color: #888; width: 120px; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.badge-green { background: #00c85333; color: #00c853; }
+.badge-red { background: #ff174433; color: #ff1744; }
+.badge-yellow { background: #ffd60033; color: #ffd600; }
+.badge-blue { background: #2979ff33; color: #2979ff; }
+.social-list { max-height: 300px; overflow-y: auto; }
+.social-list a { color: #64b5f6; text-decoration: none; font-size: 12px; display: block; padding: 3px 0; }
+.social-list a:hover { color: #00d4ff; }
+.timeline { list-style: none; }
+.timeline li { padding: 6px 0; border-left: 2px solid #2a2a4a; padding-left: 12px; margin-left: 4px; font-size: 13px; position: relative; }
+.timeline li::before { content: ''; position: absolute; left: -5px; top: 10px; width: 8px; height: 8px; background: #00d4ff; border-radius: 50%; }
+.flag { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 12px; margin: 2px; }
+.flag-warn { background: #ffd60022; color: #ffd600; border: 1px solid #ffd60044; }
+.empty { color: #666; font-style: italic; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>WhiteCrow Investigation Report</h1>
+    <div class="meta">
+      Query: <strong>{{ result.query }}</strong> |
+      Generated: {{ result.report_metadata.generated_at }} |
+      Elapsed: {{ result.report_metadata.elapsed_seconds }}s |
+      Tools: {{ result.report_metadata.tools_used | length }}
+    </div>
+    {% if result.overview.risk_flags %}
+    <div style="margin-top:12px">
+      {% for flag in result.overview.risk_flags %}
+      <span class="flag flag-warn">{{ flag }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Identity</h2>
+      <table>
+        <tr><td>Name</td><td>{{ result.identity.full_name or result.overview.primary_name or "N/A" }}</td></tr>
+        <tr><td>Aliases</td><td>{{ result.identity.aliases | join(", ") or "None" }}</td></tr>
+        <tr><td>Age</td><td>{{ result.identity.age or "N/A" }}</td></tr>
+        <tr><td>Gender</td><td>{{ result.identity.gender or "N/A" }}</td></tr>
+        <tr><td>DOB</td><td>{{ result.identity.dob or "N/A" }}</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Contact</h2>
+      <table>
+        <tr><td>Emails</td><td>{{ result.contact.email_addresses | join(", ") or "N/A" }}</td></tr>
+        <tr><td>Phones</td><td>{{ result.contact.phone_numbers | join(", ") or "N/A" }}</td></tr>
+        <tr><td>Addresses</td><td>{{ result.contact.addresses | join(", ") or "N/A" }}</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Location</h2>
+      <table>
+        <tr><td>City</td><td>{{ result.location.current_city or result.overview.primary_location or "N/A" }}</td></tr>
+        <tr><td>Country</td><td>{{ result.location.country or "N/A" }}</td></tr>
+        <tr><td>Area Code</td><td>{{ result.location.area_code or "N/A" }}</td></tr>
+      </table>
+      {% if result.location.gps_coordinates %}
+      <div style="margin-top:8px">
+        {% for gps in result.location.gps_coordinates %}
+        <div class="empty">{{ gps }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <h2>Messaging</h2>
+      <table>
+        <tr><td>WhatsApp</td><td>{% if result.digital_presence.messaging.whatsapp %}<span class="badge badge-green">Registered</span>{% else %}<span class="badge badge-red">Not Found</span>{% endif %}</td></tr>
+        <tr><td>Telegram</td><td>{% if result.digital_presence.messaging.telegram %}<span class="badge badge-green">Registered</span>{% else %}<span class="badge badge-red">Not Found</span>{% endif %}</td></tr>
+        <tr><td>Signal</td><td>{% if result.digital_presence.messaging.signal %}<span class="badge badge-green">Available</span>{% else %}<span class="badge badge-yellow">Unknown</span>{% endif %}</td></tr>
+        <tr><td>Viber</td><td>{{ result.digital_presence.messaging.viber or "N/A" }}</td></tr>
+        <tr><td>Skype</td><td>{{ result.digital_presence.messaging.skype or "N/A" }}</td></tr>
+      </table>
+    </div>
+  </div>
+
+  {% if result.digital_presence.social_media %}
+  <div class="card" style="margin-top:16px">
+    <h2>Social Media Profiles ({{ result.digital_presence.social_media | length }})</h2>
+    <div class="social-list">
+      {% for profile in result.digital_presence.social_media %}
+      <a href="{{ profile.profile_url }}" target="_blank" rel="noopener">[{{ profile.platform }}] {{ profile.username or profile.profile_url }}</a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if result.breach_data.breaches %}
+  <div class="card" style="margin-top:16px">
+    <h2>Breach Data ({{ result.breach_data.breaches | length }})</h2>
+    <table>
+      {% for breach in result.breach_data.breaches %}
+      <tr><td style="color:#ff1744">{{ breach.service }}</td><td>{{ breach.date or "Unknown" }}</td><td style="font-size:11px">{{ breach.data_exposed | join(", ") }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endif %}
+
+  {% if result.photo_metadata %}
+  <div class="card" style="margin-top:16px">
+    <h2>Photo Metadata</h2>
+    <table>
+      <tr><td>Camera</td><td>{{ result.photo_metadata.camera_model or "N/A" }}</td></tr>
+      <tr><td>Date</td><td>{{ result.photo_metadata.datetime_original or "N/A" }}</td></tr>
+      <tr><td>GPS</td><td>{{ result.photo_metadata.gps or "N/A" }}</td></tr>
+      <tr><td>Software</td><td>{{ result.photo_metadata.software or "N/A" }}</td></tr>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if result.timeline %}
+  <div class="card" style="margin-top:16px">
+    <h2>Timeline</h2>
+    <ul class="timeline">
+      {% for event in result.timeline %}
+      <li><strong>{{ event.date or "?" }}</strong> {{ event.event }} <span style="color:#666;font-size:11px">via {{ event.source }}</span></li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <div class="card" style="margin-top:16px">
+    <h2>Raw Findings</h2>
+    <table>
+      {% for tool_name, tool_res in result.raw_findings.items() %}
+      <tr>
+        <td>{{ tool_name }}</td>
+        <td>
+          {% if tool_res.status == "success" %}
+          <span class="badge badge-green">{{ tool_res.status }}</span>
+          {% elif tool_res.status == "error" %}
+          <span class="badge badge-red">{{ tool_res.status }}</span>
+          {% else %}
+          <span class="badge badge-yellow">{{ tool_res.status }}</span>
+          {% endif %}
+        </td>
+        <td style="font-size:11px;color:#888">{{ tool_res.error or "ok" }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,36 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+uploads/
+*.egg-info/
+dist/
+build/
+*.db
+*.sqlite3
+
+# OS / editor
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Environment
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Uploads / temp
+uploads/*
+!uploads/.gitkeep
+
+# Reports
+*.report.json

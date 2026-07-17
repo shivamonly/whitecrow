@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "whitecrow"
+version = "1.0.0"
+description = "Unified OSINT investigation tool — email, phone, username & photo reconnaissance"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "WhiteCrow"},
+]
+keywords = ["osint", "reconnaissance", "investigation", "sherlock", "holehe", "phone", "email"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+    "Topic :: Internet",
+]
+dependencies = [
+    "requests>=2.31.0",
+    "aiohttp>=3.9.0",
+    "Pillow>=10.0.0",
+    "python-multipart>=0.0.6",
+    "jinja2>=3.1.0",
+    "pydantic>=2.0.0",
+    "rich>=13.0.0",
+    "phonenumbers>=8.13.0",
+    "beautifulsoup4>=4.12.0",
+    "lxml>=5.0.0",
+]
+
+[project.optional-dependencies]
+web = ["fastapi>=0.100.0", "uvicorn[standard]>=0.24.0", "celery>=5.3.0", "redis>=4.5.0"]
+all = [
+    "fastapi>=0.100.0",
+    "uvicorn[standard]>=0.24.0",
+    "celery>=5.3.0",
+    "redis>=4.5.0",
+    "holehe>=1.60",
+    "sherlock-project>=0.16.0",
+    "ghunt>=2.3.0",
+    "maigret>=0.6.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/whitecrow"
+Repository = "https://github.com/yourusername/whitecrow"
+
+[project.scripts]
+whitecrow = "whitecrow.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["whitecrow*"]
