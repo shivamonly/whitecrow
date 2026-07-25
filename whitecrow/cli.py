@@ -34,7 +34,6 @@ MODES = {
 
 def show_help():
     print_banner()
-    print(f"  WhiteCrow v{__version__} — OSINT & Bug Bounty Scanner\n")
     print(f"  Usage: whitecrow <mode> <target> [options]\n")
     print(f"  {'MODE':<12} {'DESCRIPTION'}")
     print(f"  {'-'*12} {'-'*50}")
