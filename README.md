@@ -4,6 +4,9 @@
 
 [![Python](https://img.shields.io/badge/python-3.10+-blue?style=flat-square)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
+[![Linux](https://img.shields.io/badge/Linux-FCC624?style=flat-square&logo=linux&logoColor=black)]()
+[![macOS](https://img.shields.io/badge/macOS-000?style=flat-square&logo=apple&logoColor=white)]()
+[![Windows](https://img.shields.io/badge/Windows-0078D6?style=flat-square&logo=windows&logoColor=white)]()
 
 ---
 
@@ -31,6 +34,8 @@ whitecrow username johndoe           # Username search
 `target` `attack` `subdomain` `tech` `waf` `cdn` `content` `js` `sqli` `xss` `ssrf` `lfi` `cmdi` `idor` `graphql` `api` `wp` `bypass403` `bypasswaf` `email` `phone` `username` `exploit` `exploits`
 
 ---
+
+Cross-Platform: Works on Linux, macOS, and Windows
 
 ## Disclaimer
 
