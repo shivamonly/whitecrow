@@ -1,0 +1,19 @@
+[project]
+name = "whitecrow"
+version = "2.0.0"
+description = "OSINT & Bug Bounty Scanner"
+authors = [{name = "shivamonly"}]
+license = {text = "MIT"}
+requires-python = ">=3.10"
+dependencies = ["requests>=2.31.0"]
+
+[project.scripts]
+whitecrow = "whitecrow.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["whitecrow*"]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
