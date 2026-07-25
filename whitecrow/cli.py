@@ -6,14 +6,18 @@ from . import __version__
 from .core.output import phase, summary, info, good, warn, bad, finding, section
 
 MODES = {
-    "target":    "Full bug bounty recon (enum → probe → tech → content → vulns)",
+    "target":    "Full bug bounty recon (enum > probe > tech > content > vulns)",
+    "deep":      "Deep recon (enum > probe > portscan > asn > tech > content > js > vulns)",
     "attack":    "Full vulnerability scan (SQLi, XSS, SSRF, LFI, etc.)",
-    "subdomain": "Subdomain enumeration only",
+    "subdomain": "Subdomain enumeration only (14 sources)",
     "tech":      "Technology detection only",
-    "content":   "Content discovery only",
+    "content":   "Content discovery only (200+ paths)",
     "waf":       "WAF detection only",
     "cdn":       "CDN detection only",
     "js":        "JavaScript analysis only",
+    "portscan":  "Port scan host (default: 320 common ports)",
+    "asn":       "ASN / IP info lookup",
+    "iposint":   "Full IP OSINT (geo, asn, threat, domains, banners)",
     "sqli":      "SQL injection scan",
     "xss":       "XSS scan",
     "ssrf":      "SSRF check",
@@ -25,9 +29,9 @@ MODES = {
     "wp":        "WordPress vulnerability scan",
     "bypass403": "403 bypass techniques",
     "bypasswaf": "WAF bypass payloads",
-    "email":     "Email OSINT",
-    "phone":     "Phone OSINT",
-    "username":  "Username search (36 platforms)",
+    "email":     "Email OSINT (reputation, breaches, exposure)",
+    "phone":     "Phone OSINT (carrier, messaging, exposure)",
+    "username":  "Username search (100+ platforms)",
     "exploit":   "Show exploit info",
     "exploits":  "List all exploits",
 }
@@ -36,7 +40,7 @@ def show_help():
     print_banner()
     print(f"  Usage: whitecrow <mode> <target> [options]\n")
     print(f"  {'MODE':<12} {'DESCRIPTION'}")
-    print(f"  {'-'*12} {'-'*50}")
+    print(f"  {'-'*12} {'-'*55}")
     for m, d in MODES.items():
         print(f"  {m:<12} {d}")
     print(f"\n  Options:")
@@ -47,9 +51,10 @@ def show_help():
     print(f"  --no-color    Disable color output")
     print(f"\n  Examples:")
     print(f"  whitecrow target example.com")
-    print(f"  whitecrow attack https://example.com -o scan.json")
-    print(f"  whitecrow wp https://example.com")
-    print(f"  whitecrow bypass403 https://example.com/admin")
+    print(f"  whitecrow deep example.com")
+    print(f"  whitecrow portscan 1.2.3.4")
+    print(f"  whitecrow asn 1.2.3.4")
+    print(f"  whitecrow iposint 1.2.3.4")
     print(f"  whitecrow email user@example.com")
     print(f"  whitecrow username johndoe")
 
@@ -93,11 +98,18 @@ def main():
         sys.exit(0 if args.help else 1)
 
     print_banner()
-
     t0 = time.time()
 
     if mode == "target":
         run_target(target, args)
+    elif mode == "deep":
+        run_deep(target, args)
+    elif mode == "portscan":
+        run_portscan(target, args)
+    elif mode == "asn":
+        run_asn(target, args)
+    elif mode == "iposint":
+        run_iposint(target, args)
     elif mode == "attack":
         run_attack(target, args)
     elif mode == "subdomain":
@@ -148,6 +160,92 @@ def main():
     elapsed = time.time() - t0
     print(f"\n{''.join(['─']*50)}")
     print(f"  Done in {elapsed:.2f}s")
+
+def run_deep(target, args):
+    from .recon.subdomain import enum
+    from .recon.dns import resolve
+    from .recon.httprobe import probe
+    from .recon.portscan import scan
+    from .recon.asn import ip_info, asn_lookup, reverse_ip
+    from .recon.tech import detect
+    from .recon.waf import detect_waf
+    from .recon.cdn import detect_cdn
+    from .recon.content import discover
+    from .recon.javascript import analyze
+
+    phase(1, "Subdomain Enumeration")
+    subs = enum(target)
+    n = len(subs)
+    good("Subdomains", f"{n} found")
+    if n:
+        for s in subs[:15]:
+            info("sub", s)
+        if n > 15:
+            info("sub", f"... and {n-15} more")
+
+    phase(2, "DNS & HTTP Probing")
+    hosts = [target] + subs
+    resolved = resolve(hosts)
+    good("DNS", f"{len(resolved)} resolved")
+    live = probe(list(resolved.keys()))
+    good("HTTP", f"{len(live)} live")
+
+    phase(3, "Port Scan")
+    for hostname, ip in list(resolved.items())[:5]:
+        ports = scan(ip, timeout=3)
+        good("Ports", f"{len(ports)} open on {hostname} ({ip})")
+        for p in ports[:10]:
+            info(f"Port {p['port']}", p['service'])
+        if len(ports) > 10:
+            info("Port", f"... and {len(ports)-10} more")
+
+    phase(4, "ASN & IP Recon")
+    for hostname, ip in list(resolved.items())[:3]:
+        info_i = ip_info(ip)
+        good("IP Geo", f"{info_i.get('country','?')} | {info_i.get('isp','?')} | {info_i.get('org','?')}")
+        a = asn_lookup(ip)
+        if a.get("asn"):
+            info("ASN", a["asn"])
+        if a.get("org"):
+            info("Org", a["org"])
+        ip_hosting = info_i.get("hosting", False)
+        ip_proxy = info_i.get("proxy", False)
+        if ip_hosting:
+            warn("Infra", "hosting provider")
+        if ip_proxy:
+            warn("Infra", "proxy / VPN detected")
+        rev = reverse_ip(ip)
+        if rev:
+            info("Reverse IP", f"{len(rev)} other domains on same IP")
+
+    phase(5, "Technology Detection")
+    t = detect(target)
+    good("Tech", f"{len(t)} detected")
+    for name, cat in t.items():
+        info(name, cat)
+
+    phase(6, "WAF & CDN")
+    w = detect_waf(target)
+    info("WAF", w.get("waf", "None"))
+    c = detect_cdn(target)
+    info("CDN", c.get("cdn", "None"))
+
+    phase(7, "Content Discovery")
+    for u in live[:3]:
+        found = discover(u)
+        good("Content", f"{len(found)} paths on {u}")
+        for f in found[:8]:
+            info(f['url'], f"HTTP {f['status']} ({f['size']}b)")
+
+    phase(8, "JavaScript Analysis")
+    for u in live[:2]:
+        j = analyze(u)
+        if j:
+            good("JS", f"{len(j)} findings on {u}")
+            for name, matches in j.items():
+                info(name, str(matches[:3]))
+
+    summary(target, 0, n, len(live), 0)
 
 def run_target(target, args):
     from .recon.subdomain import enum
@@ -202,6 +300,33 @@ def run_target(target, args):
             good("JS", f"{len(j)} findings on {u}")
 
     summary(target, 0, n, len(live), 0)
+
+def run_portscan(target, args):
+    from .recon.portscan import scan
+    import socket
+    try:
+        ip = socket.gethostbyname(target)
+        info("Target", f"{target} -> {ip}")
+        ports = scan(ip, timeout=3)
+        good("Ports", f"{len(ports)} open")
+        for p in ports:
+            info(f"{p['port']}/{p['service']}", "open")
+    except Exception as e:
+        bad("Error", str(e))
+
+def run_asn(target, args):
+    from .recon.asn import ip_info, asn_lookup, reverse_ip
+    import json
+    result = {"target": target}
+    result["geo"] = ip_info(target)
+    result["asn"] = asn_lookup(target)
+    result["reverse_ip"] = reverse_ip(target)
+    print(json.dumps(result, indent=2))
+
+def run_iposint(target, args):
+    from .osint.iposint import investigate
+    import json
+    print(json.dumps(investigate(target), indent=2))
 
 def run_attack(target, args):
     from .attack.disclosure import check
@@ -381,9 +506,9 @@ def run_bypass403(target, args):
     from .bypass.f403 import bypass
     for t, s in bypass(target).items():
         if s and isinstance(s, int) and s < 400:
-            good("BYPASS", f"{t} → {s}")
+            good("BYPASS", f"{t} -> {s}")
         else:
-            warn("BLOCKED", f"{t} → {s}")
+            warn("BLOCKED", f"{t} -> {s}")
 
 def run_bypasswaf(target, args):
     from .bypass.waf import bypass_waf
@@ -402,6 +527,11 @@ def run_username(target, args):
     result = investigate(target)
     for p in result.get("profiles", []):
         print(f"{p['platform']}: {p['url']}")
+    good("Found", f"{result.get('count', 0)} profiles for {target}")
+    if args.output:
+        import json
+        with open(args.output, "w") as f:
+            json.dump(result, f, indent=2)
 
 def run_exploit(target, args):
     from .exploits.database import get_exploit

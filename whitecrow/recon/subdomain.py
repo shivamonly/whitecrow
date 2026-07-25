@@ -10,21 +10,31 @@ def _req(url, timeout=15):
         ctx = ssl.create_default_context()
         ctx.check_hostname = False
         ctx.verify_mode = ssl.CERT_NONE
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "application/json,text/html,*/*",
+        })
         with urllib.request.urlopen(req, context=ctx, timeout=timeout) as r:
             return r.read().decode("utf-8", errors="replace")
     except Exception:
         return ""
 
 
+def _parse_json(text):
+    try:
+        return json.loads(text)
+    except Exception:
+        return {}
+
+
 def _crt_sh(domain):
     try:
-        data = json.loads(_req(f"https://crt.sh/?q=%25.{domain}&output=json"))
+        data = _parse_json(_req(f"https://crt.sh/?q=%25.{domain}&output=json"))
         subs = set()
-        for e in data:
+        for e in data if isinstance(data, list) else []:
             for n in e.get("name_value", "").split("\n"):
                 n = n.strip().lower()
-                if n and (n.endswith("." + domain) or n == domain):
+                if n and n.endswith("." + domain):
                     subs.add(n)
         return subs
     except Exception:
@@ -33,7 +43,7 @@ def _crt_sh(domain):
 
 def _alienvault(domain):
     try:
-        data = json.loads(_req(f"https://otx.alienvault.com/api/v1/indicators/domain/{domain}/passive_dns"))
+        data = _parse_json(_req(f"https://otx.alienvault.com/api/v1/indicators/domain/{domain}/passive_dns"))
         return {e.get("hostname", "").strip().lower() for e in data.get("passive_dns", []) if e.get("hostname")}
     except Exception:
         return set()
@@ -41,8 +51,9 @@ def _alienvault(domain):
 
 def _urlscan(domain):
     try:
-        data = json.loads(_req(f"https://urlscan.io/api/v1/search/?q=domain:{domain}&size=100"))
-        return {r.get("page", {}).get("domain", "").strip().lower() for r in data.get("results", []) if r.get("page", {}).get("domain")}
+        data = _parse_json(_req(f"https://urlscan.io/api/v1/search/?q=domain:{domain}&size=100"))
+        return {r.get("page", {}).get("domain", "").strip().lower()
+                for r in data.get("results", []) if r.get("page", {}).get("domain")}
     except Exception:
         return set()
 
@@ -74,7 +85,7 @@ def _rapiddns(domain):
 
 def _bufferover(domain):
     try:
-        data = json.loads(_req(f"https://dns.bufferover.run/dns?q=.{domain}"))
+        data = _parse_json(_req(f"https://dns.bufferover.run/dns?q=.{domain}"))
         subs = set()
         for e in data.get("FDNS_A", []):
             parts = e.split(",")
@@ -87,14 +98,96 @@ def _bufferover(domain):
 
 def _certspotter(domain):
     try:
-        data = json.loads(_req(f"https://api.certspotter.com/v1/issuances?domain={domain}&include_subdomains=true&expand=dns_names"))
+        data = _parse_json(_req(f"https://api.certspotter.com/v1/issuances?domain={domain}&include_subdomains=true&expand=dns_names"))
         subs = set()
-        for e in data:
+        for e in data if isinstance(data, list) else []:
             for n in e.get("dns_names", []):
                 n = n.strip().lower()
                 if n.endswith("." + domain):
                     subs.add(n)
         return subs
+    except Exception:
+        return set()
+
+
+def _anubis(domain):
+    try:
+        data = _parse_json(_req(f"https://jldc.me/anubis/subdomains/{domain}"))
+        return {s.strip().lower() for s in data if isinstance(s, str) and s.strip().lower().endswith("." + domain)}
+    except Exception:
+        return set()
+
+
+def _threatminer(domain):
+    try:
+        data = _parse_json(_req(f"https://api.threatminer.org/v2/domain.php?q={domain}&rt=5"))
+        subs = set()
+        for r in data.get("results", []):
+            if isinstance(r, str) and r.strip().lower().endswith("." + domain):
+                subs.add(r.strip().lower())
+        return subs
+    except Exception:
+        return set()
+
+
+def _riddler(domain):
+    try:
+        html = _req(f"https://riddler.io/search?q=pld:{domain}")
+        subs = set()
+        for m in re.finditer(r'<td>([^<]+)</td>', html):
+            v = m.group(1).strip().lower()
+            if v.endswith("." + domain):
+                subs.add(v)
+        return subs
+    except Exception:
+        return set()
+
+
+def _omnisint(domain):
+    try:
+        data = _parse_json(_req(f"https://sonar.omnisint.io/subdomains/{domain}"))
+        return {s.strip().lower() for s in data if isinstance(s, str) and s.strip().lower().endswith("." + domain)}
+    except Exception:
+        return set()
+
+
+def _subdomaincenter(domain):
+    try:
+        data = _parse_json(_req(f"https://api.subdomaincenter.com/api/subdomains/{domain}"))
+        subs = set()
+        if isinstance(data, dict):
+            for entry in data.get("subdomains", []):
+                if isinstance(entry, str) and entry.strip().lower().endswith("." + domain):
+                    subs.add(entry.strip().lower())
+        return subs
+    except Exception:
+        return set()
+
+
+def _bevigil(domain):
+    try:
+        data = _parse_json(_req(f"https://osint.bevigil.com/api/{domain}/subdomains/"))
+        subs = set()
+        for entry in data.get("subdomains", []) if isinstance(data, dict) else []:
+            if isinstance(entry, str) and entry.strip().lower().endswith("." + domain):
+                subs.add(entry.strip().lower())
+        return subs
+    except Exception:
+        return set()
+
+
+def _wayback(domain):
+    try:
+        text = _req(f"https://web.archive.org/cdx/search/cdx?url=*.{domain}/*&output=text&fl=original&collapse=urlkey")
+        subs = set()
+        for line in text.strip().split("\n"):
+            if line.strip():
+                from urllib.parse import urlparse
+                try:
+                    subs.add(urlparse(line.strip()).netloc.lower())
+                except Exception:
+                    pass
+        return {s for s in subs if s.endswith("." + domain)}
     except Exception:
         return set()
 
@@ -107,6 +200,13 @@ SOURCES = [
     ("RapidDNS", _rapiddns),
     ("BufferOver", _bufferover),
     ("CertSpotter", _certspotter),
+    ("Anubis", _anubis),
+    ("ThreatMiner", _threatminer),
+    ("Riddler", _riddler),
+    ("Omnisint", _omnisint),
+    ("SubdomainCenter", _subdomaincenter),
+    ("Bevigil", _bevigil),
+    ("Wayback", _wayback),
 ]
 
 
@@ -119,7 +219,7 @@ def enum(domain):
     all_subs = set()
     all_subs.add(domain)
 
-    with ThreadPoolExecutor(max_workers=7) as ex:
+    with ThreadPoolExecutor(max_workers=len(SOURCES)) as ex:
         futures = {ex.submit(func, domain): name for name, func in SOURCES}
         for f in as_completed(futures):
             try:
@@ -130,4 +230,6 @@ def enum(domain):
     all_subs.discard("")
     all_subs.discard(domain)
     all_subs.discard("*." + domain)
+    all_subs.discard("www." + domain)
+    all_subs.discard("mail." + domain)
     return sorted(all_subs)
