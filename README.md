@@ -11,8 +11,12 @@ Cross-Platform: Linux / macOS / Windows
 ```bash
 git clone https://github.com/shivamonly/whitecrow.git
 cd whitecrow
+python3 -m venv venv
+source venv/bin/activate      # On Windows: venv\Scripts\activate
 pip install -e .
 ```
+
+> **Kali Linux**: Use a virtual environment (as shown above) because system Python is externally managed.
 
 ## Usage
 
