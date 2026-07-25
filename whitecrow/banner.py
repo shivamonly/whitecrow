@@ -33,7 +33,7 @@ COLORED = HAS_LOLCAT
 
 
 def banner_text():
-    return CROW + f"  WhiteCrow v{__version__} — OSINT & Bug Bounty Scanner\n"
+    return CROW + f"  WhiteCrow v{__version__} — OSINT & Reconnaissance Tool\n"
 
 
 def print_banner():

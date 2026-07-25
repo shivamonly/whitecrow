@@ -1,6 +1,6 @@
 # WhiteCrow
 
-**OSINT & Bug Bounty Scanner**
+**OSINT & Reconnaissance Tool**
 
 Cross-Platform: Linux / macOS / Windows
 
@@ -21,17 +21,25 @@ pip install -e .
 ## Usage
 
 ```bash
-whitecrow target example.com         # Full recon
-whitecrow attack example.com         # Full vuln scan
-whitecrow wp example.com             # WordPress scan
-whitecrow bypass403 example.com/admin # 403 bypass
+whitecrow target example.com         # Standard recon
+whitecrow deep example.com           # Deep recon (subdomains → ports → ASN → tech → content)
+whitecrow subdomain example.com      # Subdomain enumeration (14 sources)
+whitecrow portscan 1.2.3.4           # Port scan (320 ports)
+whitecrow asn 1.2.3.4               # ASN / IP geo info
+whitecrow iposint 1.2.3.4           # Full IP OSINT
+whitecrow tech example.com           # Technology detection
+whitecrow waf example.com            # WAF detection
+whitecrow cdn example.com            # CDN detection
+whitecrow content https://example.com # Content discovery (200+ paths)
+whitecrow js https://example.com     # JavaScript analysis
 whitecrow email user@example.com     # Email OSINT
-whitecrow username johndoe           # Username search
+whitecrow phone +1234567890          # Phone OSINT
+whitecrow username johndoe           # Username search (100+ platforms)
 ```
 
 ## Modes
 
-`target` `attack` `subdomain` `tech` `waf` `cdn` `content` `js` `sqli` `xss` `ssrf` `lfi` `cmdi` `idor` `graphql` `api` `wp` `bypass403` `bypasswaf` `email` `phone` `username` `exploit` `exploits`
+`target` `deep` `subdomain` `tech` `waf` `cdn` `content` `js` `portscan` `asn` `iposint` `email` `phone` `username`
 
 ---
 
