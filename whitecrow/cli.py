@@ -1,7 +1,7 @@
 import argparse
 import sys
 import time
-from .banner import BANNER
+from .banner import print_banner, BANNER
 from . import __version__
 from .core.output import phase, summary, info, good, warn, bad, finding, section
 
@@ -33,7 +33,7 @@ MODES = {
 }
 
 def show_help():
-    print(BANNER)
+    print_banner()
     print(f"  WhiteCrow v{__version__} — OSINT & Bug Bounty Scanner\n")
     print(f"  Usage: whitecrow <mode> <target> [options]\n")
     print(f"  {'MODE':<12} {'DESCRIPTION'}")
@@ -93,7 +93,7 @@ def main():
         show_help()
         sys.exit(0 if args.help else 1)
 
-    print(BANNER)
+    print_banner()
 
     t0 = time.time()
 
