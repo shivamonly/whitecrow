@@ -59,19 +59,97 @@ def investigate(phone):
             result["country"] = prefixes[k]
             break
 
-    # numverify-like check (free api)
-    try:
-        r = requests.get(f"https://phonevalidation.abstractapi.com/v1/?api_key=&phone={cleaned}",
-                        headers={"User-Agent": "Mozilla/5.0"}, timeout=8)
-        if r.status_code == 200:
-            d = r.json()
-            result["valid"] = d.get("valid", False)
-            result["carrier"] = d.get("carrier")
-            result["line_type"] = d.get("line_type")
-            if d.get("country"):
-                result["country"] = d["country"].get("name") or result["country"]
-    except Exception:
-        pass
+    # local validation (regex + length)
+    n_numeric = re.sub(r"\D", "", raw)
+    country_digit_count = {"1": 10, "7": 10, "20": 9, "33": 9, "34": 9,
+                           "39": 10, "44": 10, "49": 10, "52": 10, "55": 10,
+                           "61": 9, "62": 10, "63": 10, "64": 9, "65": 8,
+                           "81": 10, "82": 10, "86": 11, "90": 10, "91": 10,
+                           "92": 10, "93": 9, "94": 9, "95": 8, "98": 10,
+                           "212": 9, "213": 9, "216": 8, "218": 9,
+                           "234": 10, "254": 9, "255": 9, "256": 9,
+                           "260": 9, "263": 9, "264": 9, "265": 8,
+                           "351": 9, "352": 8, "353": 9, "354": 7, "355": 8,
+                           "356": 8, "357": 8, "358": 9, "359": 8,
+                           "370": 8, "371": 8, "372": 7, "373": 8, "374": 8,
+                           "375": 9, "380": 9, "381": 8, "385": 8, "386": 8,
+                           "387": 8, "389": 8, "420": 9, "421": 9}
+    expected = 10
+    for k in sorted(country_digit_count.keys(), key=len, reverse=True):
+        if n_numeric.startswith(k):
+            expected = country_digit_count[k]
+            break
+    result["valid"] = len(n_numeric) == len(str(int(n_numeric))) and len(n_numeric[len(list(prefixes.keys())[0]):]) >= expected - 2
+
+    # local carrier detection for common prefixes
+    carriers = {
+        "91": {
+            "98": "Airtel", "99": "Airtel", "97": "Airtel",
+            "96": "Airtel", "95": "Airtel",
+            "93": "Jio", "932": "Jio", "933": "Jio", "934": "Jio",
+            "935": "Jio", "936": "Jio", "937": "Jio",
+            "90": "Vodafone Idea", "91": "Vodafone Idea",
+            "89": "BSNL", "94": "BSNL",
+            "70": "Jio", "73": "Jio", "74": "Jio", "75": "Jio",
+            "76": "Jio", "77": "Jio", "78": "Jio", "79": "Jio",
+            "80": "Airtel", "81": "Airtel", "82": "Airtel",
+            "83": "Airtel", "84": "Airtel", "85": "Airtel",
+            "86": "Airtel", "87": "Airtel", "88": "Airtel",
+            "99": "Airtel",
+        },
+        "7": {
+            "903": "Beeline", "905": "Beeline", "906": "Beeline",
+            "909": "Beeline", "960": "Beeline", "961": "Beeline",
+            "962": "Beeline", "963": "Beeline", "964": "Beeline",
+            "965": "Beeline", "966": "Beeline", "967": "Beeline",
+            "968": "Beeline", "969": "Beeline",
+            "916": "MTS", "917": "MTS", "918": "MTS", "919": "MTS",
+            "910": "MTS", "911": "MTS", "912": "MTS", "913": "MTS",
+            "914": "MTS", "915": "MTS",
+            "925": "Megafon", "926": "Megafon", "927": "Megafon",
+            "928": "Megafon", "929": "Megafon", "930": "Megafon",
+            "931": "Megafon", "932": "Megafon", "933": "Megafon",
+            "934": "Megafon", "935": "Megafon", "936": "Megafon",
+            "937": "Megafon", "938": "Megafon", "999": "Megafon",
+            "951": "Tele2", "952": "Tele2", "953": "Tele2",
+            "954": "Tele2", "955": "Tele2", "956": "Tele2",
+            "957": "Tele2", "958": "Tele2", "959": "Tele2",
+            "977": "Yota", "978": "Yota", "979": "Yota",
+        },
+        "1": {
+            "201": "Verizon", "202": "Verizon", "203": "Verizon",
+            "212": "AT&T", "213": "AT&T", "214": "AT&T",
+            "310": "T-Mobile", "311": "T-Mobile", "312": "T-Mobile",
+            "415": "AT&T", "416": "AT&T", "510": "AT&T",
+            "612": "T-Mobile", "617": "Verizon", "619": "AT&T",
+            "646": "Verizon", "650": "AT&T", "702": "AT&T",
+            "718": "Verizon", "732": "Verizon", "773": "AT&T",
+            "786": "T-Mobile", "800": "Toll-Free", "808": "Hawaii",
+            "818": "AT&T", "832": "AT&T", "845": "Verizon",
+            "858": "AT&T", "860": "AT&T", "866": "Toll-Free",
+            "877": "Toll-Free", "888": "Toll-Free", "900": "Premium",
+            "909": "AT&T", "914": "Verizon", "916": "AT&T",
+            "917": "Verizon", "919": "AT&T", "925": "AT&T",
+            "949": "AT&T", "954": "AT&T", "970": "AT&T",
+            "972": "AT&T", "973": "Verizon", "978": "Verizon",
+        },
+        "44": {
+            "77": "Vodafone", "78": "Vodafone", "79": "Vodafone",
+            "74": "EE", "75": "EE", "73": "EE",
+            "71": "Orange", "72": "Orange",
+        },
+    }
+    detected_carrier = None
+    for cc, prefixes in carriers.items():
+        if n_numeric.startswith(cc):
+            rest = n_numeric[len(cc):]
+            carr = prefixes.get(rest[:3]) or prefixes.get(rest[:2]) or prefixes.get(rest[:1])
+            if carr:
+                detected_carrier = carr
+                break
+    if detected_carrier:
+        result["carrier"] = detected_carrier
+        result["line_type"] = "mobile"
 
     # messaging platform checks
     try:
