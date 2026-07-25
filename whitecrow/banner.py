@@ -29,15 +29,6 @@ CROW = r"""⢠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 
 """
 
-COW_ART = ""
-if shutil.which("cowsay"):
-    try:
-        r = subprocess.run(["cowsay", "Ready to hunt bugs"], capture_output=True, text=True, timeout=5)
-        if r.returncode == 0:
-            COW_ART = r.stdout
-    except Exception:
-        pass
-
 COLORED = HAS_LOLCAT
 
 
@@ -52,16 +43,10 @@ def print_banner():
             r = subprocess.run(["lolcat"], input=txt, capture_output=True, text=True, timeout=5)
             if r.returncode == 0:
                 print(r.stdout, end="")
-                if COW_ART:
-                    rc = subprocess.run(["lolcat"], input=COW_ART, capture_output=True, text=True, timeout=5)
-                    if rc.returncode == 0:
-                        print(rc.stdout, end="")
                 return
         except Exception:
             pass
     print(txt)
-    if COW_ART:
-        print(COW_ART)
 
 
 BANNER = banner_text()
